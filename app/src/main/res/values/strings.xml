@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Scan &amp; Shop</string>
+    <string name="scan_and_shop">Scan and Shop</string>
+    <string name="scan_barcode">Scan Barcode</string>
+    <string name="custom_activity">Continuous Scan</string>
+    <string name="toolbar_activity">Activity with Toolbar</string>
+    <string name="scanner_with_margin">Scanner with Margin</string>
+    <string name="title_activity_tabbed_scanning">Tabbed Scanning</string>
+    <string name="tabs">Tabs</string>
+
+    <string name="btn_back_to_homepage">Kembali ke Rumah Bapa</string>
+    <string name="btn_continue_to_payment">Lanjutkan Pembayaran</string>
+    <string name="btn_remove_item">Hapus</string>
+</resources>
