@@ -9,6 +9,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.koushikdutta.ion.Ion;
+
 import java.util.List;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
@@ -26,8 +28,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
     return new ViewHolder(itemView);
   }
 
-  public void addItemToList(Item newItem) {
-    this.itemList.add(newItem);
+  public void setItemList(List<Item> itemList) {
+    this.itemList = itemList;
     notifyDataSetChanged();
   }
 
@@ -39,7 +41,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
     holder.priceStrikeThrough.setPaintFlags(holder.priceStrikeThrough.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
     holder.price.setText(item.getPrice());
     holder.quantity.setText(item.getQuantity());
-    holder.image.setImageBitmap(item.getImageBitmap());
+    Ion.with(holder.image).load(item.getImageUrl());
     //TODO set hapus button
   }
 

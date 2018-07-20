@@ -5,6 +5,18 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <RelativeLayout
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+    </RelativeLayout>
+
     <com.journeyapps.barcodescanner.DecoratedBarcodeView
         android:id="@+id/barcode_scanner"
         android:layout_width="match_parent"
@@ -21,21 +33,12 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btn_continue_shopping"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_weight="1"
-            android:text="@string/btn_back_to_homepage"
-            android:textColor="@color/clr_primary_blibli" />
-
-        <Button
             android:id="@+id/btn_checkout"
             style="?android:attr/buttonBarNeutralButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="30dp"
+            android:layout_marginStart="30dp"
             android:layout_weight="1"
             android:text="@string/btn_continue_to_payment"
             android:textColor="@color/clr_continue_to_payment" />

@@ -8,7 +8,6 @@
     <string name="title_activity_tabbed_scanning">Tabbed Scanning</string>
     <string name="tabs">Tabs</string>
 
-    <string name="btn_back_to_homepage">Kembali ke Rumah Bapa</string>
     <string name="btn_continue_to_payment">Lanjutkan Pembayaran</string>
     <string name="btn_remove_item">Hapus</string>
 </resources>
