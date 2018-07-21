@@ -15,9 +15,11 @@ import java.util.List;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
   private List<Item> itemList;
+  private Listener listener;
 
-  public ItemAdapter(List<Item> itemList) {
+  public ItemAdapter(List<Item> itemList, Listener listener) {
     this.itemList = itemList;
+    this.listener = listener;
   }
 
   @Override
@@ -35,7 +37,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
 
   @Override
   public void onBindViewHolder(ViewHolder holder, int position) {
-    Item item = itemList.get(position);
+    final Item item = itemList.get(position);
     holder.name.setText(item.getName());
     holder.priceStrikeThrough.setText(item.getPriceStrikethrough());
     holder.priceStrikeThrough.setPaintFlags(holder.priceStrikeThrough.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -43,6 +45,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
     holder.quantity.setText(item.getQuantity());
     Ion.with(holder.image).load(item.getImageUrl());
     //TODO set hapus button
+    holder.removeItem.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        listener.onDelete(item.getId());
+      }
+    });
   }
 
   @Override
@@ -64,6 +72,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
       image = view.findViewById(R.id.img_item_image);
       removeItem = view.findViewById(R.id.btn_item_remove);
     }
+  }
+
+  public interface Listener {
+    void onDelete(String id);
   }
 
 }

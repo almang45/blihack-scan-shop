@@ -3,7 +3,7 @@ package gawendeng.org.scanshop.request;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class AddToCartRequest {
+public class CartRequest {
 
   @SerializedName("id")
   @Expose
@@ -17,9 +17,15 @@ public class AddToCartRequest {
   @Expose
   public String type;
 
-  public AddToCartRequest(String id) {
+  public CartRequest(String id) {
     this.id = id;
     this.quantity = 1;
+    this.type = "REGULAR";
+  }
+
+  public CartRequest(String id, int quantity) {
+    this.id = id;
+    this.quantity = quantity;
     this.type = "REGULAR";
   }
 

@@ -1,14 +1,13 @@
 package gawendeng.org.scanshop;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.KeyEvent;
 import android.view.View;
 
 import com.google.zxing.BarcodeFormat;
@@ -19,13 +18,12 @@ import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 import com.journeyapps.barcodescanner.DefaultDecoderFactory;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import gawendeng.org.scanshop.request.AddToCartRequest;
+import gawendeng.org.scanshop.request.CartRequest;
 import gawendeng.org.scanshop.response.CartItem;
 import gawendeng.org.scanshop.response.DataResponse;
 import gawendeng.org.scanshop.rest.ApiService;
@@ -43,18 +41,14 @@ public class ScannerActivity extends Activity {
   private List<Item> itemList = new ArrayList<>();
   private RecyclerView recyclerView;
   private ItemAdapter itemAdapter;
-  private String lastScannedText;
-  private long lastScannedTime;
 
   private BarcodeCallback callback = new BarcodeCallback() {
     @Override
     public void barcodeResult(BarcodeResult result) {
-      if (result.getText() == null && isDuplicate(result)) {
+      if (result.getText() == null) {
         return;
       }
 
-      lastScannedText = result.getText();
-      lastScannedTime = result.getTimestamp();
       barcodeView.setStatusText(result.getText());
       beepManager.playBeepSoundAndVibrate();
 
@@ -66,18 +60,18 @@ public class ScannerActivity extends Activity {
     }
   };
 
-  private boolean isDuplicate(BarcodeResult result) {
-    return result.getText().equals(lastScannedText) && result.getTimestamp() - lastScannedTime > 60000;
-  }
-
   public void addToCart(String itemSku) {
-    mApiService.addToCart(new AddToCartRequest(itemSku)).enqueue(new Callback<DataResponse>() {
+    mApiService.addToCart(new CartRequest(itemSku)).enqueue(new Callback<DataResponse>() {
       @Override
       public void onResponse(Call<DataResponse> call, Response<DataResponse> response) {
-        if (response.isSuccessful()) {
+        findViewById(R.id.loadingPanelCart).setVisibility(View.VISIBLE);
+        if (response.isSuccessful() && response.body().getCode() == 200) {
           List<Item> itemList = convertCartItemToItem(response.body().getCartResponse().getItems());
           itemAdapter.setItemList(itemList);
+        } else {
+          getOutOfStockDialog();
         }
+        findViewById(R.id.loadingPanelCart).setVisibility(View.GONE);
       }
 
       @Override
@@ -87,16 +81,48 @@ public class ScannerActivity extends Activity {
     });
   }
 
+  private void getOutOfStockDialog() {
+    AlertDialog.Builder dialog = new AlertDialog.Builder(ScannerActivity.this);
+    dialog.setTitle("Out of Stock!");
+    dialog.setMessage("Maaf, stok barang habis!");
+    dialog.setPositiveButton("Belanja Lagi", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        dialog.dismiss();
+      }
+    });
+    dialog.show();
+  }
+
   public void getCart() {
     mApiService.getCart().enqueue(new Callback<DataResponse>() {
       @Override
       public void onResponse(Call<DataResponse> call, Response<DataResponse> response) {
-        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+        findViewById(R.id.loadingPanelCart).setVisibility(View.VISIBLE);
         if (response.isSuccessful()) {
           List<Item> itemList = convertCartItemToItem(response.body().getCartResponse().getItems());
           itemAdapter.setItemList(itemList);
         }
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+        findViewById(R.id.loadingPanelCart).setVisibility(View.GONE);
+      }
+
+      @Override
+      public void onFailure(Call<DataResponse> call, Throwable t) {
+
+      }
+    });
+  }
+
+  public void updateCart(String id) {
+    mApiService.updateCart(new CartRequest(id, 0)).enqueue(new Callback<DataResponse>() {
+      @Override
+      public void onResponse(Call<DataResponse> call, Response<DataResponse> response) {
+        findViewById(R.id.loadingPanelCart).setVisibility(View.VISIBLE);
+        if (response.isSuccessful()) {
+          List<Item> itemList = convertCartItemToItem(response.body().getCartResponse().getItems());
+          itemAdapter.setItemList(itemList);
+        }
+        findViewById(R.id.loadingPanelCart).setVisibility(View.GONE);
       }
 
       @Override
@@ -116,22 +142,13 @@ public class ScannerActivity extends Activity {
 
   private Item convertCartItemToItem(CartItem cartItem) {
     Item item = new Item();
+    item.setId(cartItem.getItemSku());
     item.setName(cartItem.getName());
     item.setPrice(formatPrice(cartItem.getPrice().getOffered()));
     item.setPriceStrikethrough(formatPrice(cartItem.getPrice().getListed()));
     item.setQuantity(cartItem.getQuantity() + "");
     item.setImageUrl(cartItem.getThumbnailUrl());
-    item.setImageBitmap(getItemImageBitmap(cartItem.getThumbnailUrl()));
     return item;
-  }
-
-  private Bitmap getItemImageBitmap(String imageUrl) {
-    try {
-      URL url = new URL(imageUrl);
-      return BitmapFactory.decodeStream(url.openConnection().getInputStream());
-    } catch (Exception e) {
-      return null;
-    }
   }
 
   private String formatPrice(float price) {
@@ -147,13 +164,24 @@ public class ScannerActivity extends Activity {
     barcodeView = findViewById(R.id.barcode_scanner);
     Collection<BarcodeFormat> formats = Arrays.asList(BarcodeFormat.QR_CODE, BarcodeFormat.CODE_39);
     barcodeView.getBarcodeView().setDecoderFactory(new DefaultDecoderFactory(formats));
-    barcodeView.decodeContinuous(callback);
+    barcodeView.decodeSingle(callback);
+    findViewById(R.id.btn_continue_shopping).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        barcodeView.decodeSingle(callback);
+      }
+    });
 
     beepManager = new BeepManager(this);
 
-    recyclerView = findViewById(R.id.view_cart);
+    itemAdapter = new ItemAdapter(itemList, new ItemAdapter.Listener() {
+      @Override
+      public void onDelete(String id) {
+        updateCart(id);
+      }
+    });
 
-    itemAdapter = new ItemAdapter(itemList);
+    recyclerView = findViewById(R.id.view_cart);
     RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
     recyclerView.setLayoutManager(mLayoutManager);
     recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -179,20 +207,8 @@ public class ScannerActivity extends Activity {
     barcodeView.pause();
   }
 
-  public void pause(View view) {
-    barcodeView.pause();
-  }
-
-  public void resume(View view) {
-    barcodeView.resume();
-  }
-
   public void triggerScan(View view) {
     barcodeView.decodeSingle(callback);
   }
 
-  @Override
-  public boolean onKeyDown(int keyCode, KeyEvent event) {
-    return barcodeView.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
-  }
 }

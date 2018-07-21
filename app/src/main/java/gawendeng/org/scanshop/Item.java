@@ -1,39 +1,18 @@
 package gawendeng.org.scanshop;
 
-import android.graphics.Bitmap;
-
 public class Item {
 
-  private String name, priceStrikethrough, price, quantity, imageUrl;
-  private Bitmap imageBitmap;
-
+  private String id, name, priceStrikethrough, price, quantity, imageUrl;
 
   public Item() {
   }
 
-  public Item(String name, String priceStrikethrough, String price, String quantity, String imageUrl) {
-    this.name = name;
-    this.priceStrikethrough = priceStrikethrough;
-    this.price = price;
-    this.quantity = quantity;
-    this.imageUrl = imageUrl;
+  public String getId() {
+    return id;
   }
 
-  public Item(String name, String priceStrikethrough, String price, String quantity, String imageUrl, Bitmap imageBitmap) {
-    this.name = name;
-    this.priceStrikethrough = priceStrikethrough;
-    this.price = price;
-    this.quantity = quantity;
-    this.imageUrl = imageUrl;
-    this.imageBitmap = imageBitmap;
-  }
-
-  public Bitmap getImageBitmap() {
-    return imageBitmap;
-  }
-
-  public void setImageBitmap(Bitmap imageBitmap) {
-    this.imageBitmap = imageBitmap;
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {
